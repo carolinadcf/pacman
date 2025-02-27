@@ -21,6 +21,7 @@ import util
 from game import Directions
 from typing import List
 import heapq
+from collections import deque
 
 
 class SearchProblem:
@@ -96,8 +97,35 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # # Source: https://stackoverflow.com/questions/77539424/breadth-first-search-bfs-in-python-for-path-traversed-and-shortest-path-taken
+    # visited = {}  # {state: [parent, action,]}
+    # queue = deque()  # queue of nodes to visit
+
+    # start_state = problem.getStartState()
+
+    # visited[start_state] = None  # start state has no parent
+    # queue.append(start_state)
+
+    # while queue:
+    #     current_state = queue.popleft()
+
+    #     # goal is reached, get path
+    #     if problem.isGoalState(current_state):
+    #         path = []
+    #         while current_state:  # stop at start state
+    #             previous_state = visited[current_state][
+    #                 1
+    #             ]  # get action needed to get to node from parent
+    #             path.append(current_state)
+    #             current_state = previous_state
+    #         # path goes from goal to start, need to reverse it
+    #         return list(reversed(path))
+
+    #     for next_state, action, _ in problem.getSuccessors(current_state):
+    #         if next_state not in visited:  # state has not been already
+    #             queue
+
+    return aStarSearch(problem)
 
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
@@ -116,7 +144,6 @@ def nullHeuristic(state, problem=None) -> float:
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
     to_visit = []  # nodes to be explored (heap)
     # f(n) - total cost, g(n) - cost to get there, [steps,], state
     start_state = problem.getStartState()
