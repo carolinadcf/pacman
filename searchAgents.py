@@ -41,7 +41,7 @@ import pacman
 import search
 import util
 from game import Actions, Agent, Directions
-
+import itertools
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -516,7 +516,7 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     Your heuristic for the FoodSearchProblem goes here.
 
     If using A* ever finds a solution that is worse uniform cost search finds,
-    your search may have a but our your heuristic is not admissible!  On the
+    your search may have a but our your heuristic is not admissible! On the
     other hand, inadmissible heuristics may find optimal solutions, so be careful.
 
     The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
@@ -524,7 +524,7 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     a list of food coordinates instead.
 
     If you want access to info like walls, capsules, etc., you can query the
-    problem.  For example, problem.walls gives you a Grid of where the walls
+    problem. For example, problem.walls gives you a Grid of where the walls
     are.
 
     If you want to *store* information to be reused in other calls to the
@@ -535,8 +535,18 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+
+    # get list of food
+    food_list = foodGrid.asList()
+
+    max_distance = 0
+
+    # combinations has less comparations than 2 nested for loops
+    for food_1, food_2 in itertools.combinations(food_list, 2):
+        distance = mazeDistance(food_1, food_2, problem.startingGameState)
+        max_distance = max(distance, max_distance)
+
+    return max_distance
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -572,8 +582,7 @@ class ClosestDotSearchAgent(SearchAgent):
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem) # find closest dot
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -607,10 +616,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x, y = state
+        x, y = state # pacman's positon
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 
 def mazeDistance(
