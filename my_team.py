@@ -181,13 +181,13 @@ class SingleSmartAgent(CaptureAgent):
         )
 
         # Remove STOP action when on enemy side.
-        # if on_enemy_side and Directions.STOP in actions:
-        #     actions.remove(Directions.STOP)
+        if on_enemy_side and Directions.STOP in actions:
+            actions.remove(Directions.STOP)
 
         # Epsilon-greedy random action selection.
-        # epsilon = 0.1
-        # if random.random() < epsilon:
-        #     return random.choice(actions)
+        epsilon = 0.05
+        if random.random() < epsilon:
+            return random.choice(actions)
 
         # Evaluate actions based on features & weights.
         values = [self.evaluate(game_state, a) for a in actions]
@@ -195,8 +195,8 @@ class SingleSmartAgent(CaptureAgent):
         best_actions = [a for a, v in zip(actions, values) if v == max_value]
         best_values = [v for a, v in zip(actions, values) if v == max_value]
 
-        if self.role == "attack":
-            print(f"Agent {self.index} has {best_values} for {best_actions}")
+        # if self.role == "attack":
+        #     print(f"Agent {self.index} has {best_values} for {best_actions}")
 
         choosen_action = random.choice(best_actions)
 
@@ -229,36 +229,36 @@ class SingleSmartAgent(CaptureAgent):
 
         # Check if there's an invader on our side
         invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
-        intruder_nearby = False
-        if not game_state.get_agent_state(self.index).is_pacman and invaders:
-            if self.powered:
-                intruder_nearby = False
-            else:
-                valid_invaders = [
-                    inv
-                    for inv in invaders
-                    if inv.scared_timer is None or inv.scared_timer < 5
-                ]
-                if valid_invaders:
-                    intruder_nearby = True
-                    distances = [
-                        self.get_maze_distance(my_pos, inv.get_position())
-                        for inv in valid_invaders
-                    ]
-                    if distances and min(distances) < 5:
-                        intruder_nearby = True
+        # intruder_nearby = False
+        # if not game_state.get_agent_state(self.index).is_pacman and invaders:
+        #     if self.powered:
+        #         intruder_nearby = False
+        #     else:
+        #         valid_invaders = [
+        #             inv
+        #             for inv in invaders
+        #             if inv.scared_timer is None or inv.scared_timer < 5
+        #         ]
+        #         if valid_invaders:
+        #             intruder_nearby = True
+        #             distances = [
+        #                 self.get_maze_distance(my_pos, inv.get_position())
+        #                 for inv in valid_invaders
+        #             ]
+        #             if distances and min(distances) < 5:
+        #                 intruder_nearby = True
 
         # if i am scared, attack
         if game_state.get_agent_state(self.index).scared_timer:
             self.role = "attack"
-            return
+            # return
 
         distance_between_teammates = self.get_maze_distance(my_pos, other_pos)
 
         if self.powered:
             self.role = "attack"
         # intruder_nearby and not teammate is closer
-        elif intruder_nearby and distance_between_teammates > 5:
+        elif invaders and distance_between_teammates > 5:
             self.role = "defend"
         else:
             self.role = "defend" if is_closer else "attack"
@@ -337,8 +337,8 @@ class SingleSmartAgent(CaptureAgent):
         else:
             features.update(self.get_defensive_features(successor))
 
-        if self.role == "attack":
-            print("Action", action)
+        # if self.role == "attack":
+        #     print("Action", action)
 
         return features
 
@@ -393,15 +393,12 @@ class SingleSmartAgent(CaptureAgent):
         carrying = successor.get_agent_state(self.index).num_carrying
         if carrying > 0:
             # Calculate risk vs reward
-            distance_home = (
-                self.a_star_distance(
-                    successor,
-                    my_pos,
-                    self.closest_safe_frontier,
-                    dynamic=False,
-                    safe=True,
-                )
-                + 1
+            distance_home = self.a_star_distance(
+                successor,
+                my_pos,
+                self.closest_safe_frontier,
+                dynamic=False,
+                safe=True,
             )
             time_remaining = game_state.data.timeleft
 
@@ -418,11 +415,11 @@ class SingleSmartAgent(CaptureAgent):
             elif score > 5:  # Protecting a lead
                 return_threshold = 4
 
-            if carrying >= return_threshold or time_remaining < distance_home * 4 + 10:
+            if carrying >= return_threshold or time_remaining < (distance_home + 6) * 4:
                 features["return_home"] = distance_home * (1 + carrying / 5)
 
-        if self.role == "attack":
-            print(f"Agent {self.index} has {features}")
+        # if self.role == "attack":
+        #     print(f"Agent {self.index} has {features}")
 
         return features
 
